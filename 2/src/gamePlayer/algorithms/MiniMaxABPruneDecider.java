@@ -23,7 +23,7 @@ public class MiniMaxABPruneDecider implements Decider {
 	// The depth to which we should analyze the search space
 	private int depth;
 	// HashMap to avoid recalculating States
-	private Map<State, Float> computedStates;
+	//private Map<State, Float> computedStates;
 	// Used to generate a graph of the search space for each turn in SVG format
 	private static final boolean DEBUG = true;
 
@@ -35,7 +35,7 @@ public class MiniMaxABPruneDecider implements Decider {
 	public MiniMaxABPruneDecider(boolean maximize, int depth) {
 		this.maximize = maximize;
 		this.depth = depth;
-		computedStates = new HashMap<State, Float>();
+		//computedStates = new HashMap<State, Float>();
 	}
 	
 	/**
@@ -50,6 +50,8 @@ public class MiniMaxABPruneDecider implements Decider {
 	public Action decide(State state) {
 		// Choose randomly between equally good options
 		float value = maximize ? Float.NEGATIVE_INFINITY : Float.POSITIVE_INFINITY;
+		float alpha =  Float.NEGATIVE_INFINITY;
+		float beta = Float.POSITIVE_INFINITY;
 		List<Action> bestActions = new ArrayList<Action>();
 		// Iterate!
 		int flag = maximize ? 1 : -1;
@@ -57,7 +59,7 @@ public class MiniMaxABPruneDecider implements Decider {
 			try {
 				// Algorithm!
 				State newState = action.applyTo(state);
-				float newValue = this.miniMaxRecursor(newState, 1, !this.maximize);
+				float newValue = this.miniMaxRecursor(newState, 1, !this.maximize, alpha, beta);
 				// Better candidates?
 				if (flag * newValue > flag * value) {
 					value = newValue;
@@ -66,6 +68,11 @@ public class MiniMaxABPruneDecider implements Decider {
 				// Add it to the list of candidates?
 				if (flag * newValue >= flag * value)
 					bestActions.add(action);
+				if (maximize) {
+					alpha = alpha > value ? alpha : value;
+				} else {
+					beta = beta < value ? beta : value;
+				}
 			} catch (InvalidActionException e) {
 				throw new RuntimeException("Invalid action!");
 			}
@@ -86,11 +93,11 @@ public class MiniMaxABPruneDecider implements Decider {
 	 * @return The best point count we can get on this branch of the state space to the specified depth.
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public float miniMaxRecursor(State state, int depth, boolean maximize) {
+	public float miniMaxRecursor(State state, int depth, boolean maximize, float alpha, float beta) {
 		// Has this state already been computed?
-		if (computedStates.containsKey(state)) 
+		//if (computedStates.containsKey(state))
                     // Return the stored result
-                    return computedStates.get(state);
+                    //return computedStates.get(state);
 		// Is this state done?
 		if (state.getStatus() != Status.Ongoing)
                     // Store and return
@@ -108,10 +115,21 @@ public class MiniMaxABPruneDecider implements Decider {
 			// Check it. Is it better? If so, keep it.
 			try {
 				State childState = action.applyTo(state);
-				float newValue = this.miniMaxRecursor(childState, depth + 1, !maximize);
+				float newValue = this.miniMaxRecursor(childState, depth + 1, !maximize, alpha, beta);
 				//Record the best value
-                                if (flag * newValue > flag * value) 
-                                    value = newValue;
+				if (flag * newValue > flag * value)
+					value = newValue;
+				if (maximize) {
+					if (value >= beta) {
+						return value;
+					}
+					alpha = alpha > value ? alpha : value;
+				} else {
+					if (value <= alpha) {
+						return value;
+					}
+					beta = beta < value ? beta : value;
+				}
 			} catch (InvalidActionException e) {
                                 //Should not go here
 				throw new RuntimeException("Invalid action!");
