@@ -110,6 +110,7 @@ public class MiniMaxABPruneDecider implements Decider {
 		// If not, recurse further. Identify the best actions to take.
 		float value = maximize ? Float.NEGATIVE_INFINITY : Float.POSITIVE_INFINITY;
 		int flag = maximize ? 1 : -1;
+		float bound = maximize ? beta : alpha;
 		List<Action> test = state.getActions();
 		for (Action action : test) {
 			// Check it. Is it better? If so, keep it.
@@ -119,15 +120,12 @@ public class MiniMaxABPruneDecider implements Decider {
 				//Record the best value
 				if (flag * newValue > flag * value)
 					value = newValue;
+				if (flag * value >= flag * bound) {
+					return value;
+				}
 				if (maximize) {
-					if (value >= beta) {
-						return value;
-					}
 					alpha = alpha > value ? alpha : value;
 				} else {
-					if (value <= alpha) {
-						return value;
-					}
 					beta = beta < value ? beta : value;
 				}
 			} catch (InvalidActionException e) {
