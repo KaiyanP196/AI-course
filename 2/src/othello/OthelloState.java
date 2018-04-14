@@ -28,7 +28,7 @@ public class OthelloState implements State {
 	/**
 	 * 00 = empty; 01 = ignored; 10 = white; 11 = black.
 	 */
-	
+	// 65536 = 2 ^ 16; 8 squares each line and 2 digits for each spot
 	// A lookup table to figure out the point differential in a line 
 	private static byte[] pointTable = new byte[65536];
 	
@@ -52,6 +52,7 @@ public class OthelloState implements State {
 	/**
 	 * The static constructor to generate our tables.
 	 */
+	// 在类的constructor之前执行，并且只会执行一次
 	static {
 		generateTables((short)0, (byte)0, (byte)0);
 		generateHashValues();
@@ -90,7 +91,6 @@ public class OthelloState implements State {
 		}
 		// Recursive!
 		line = (short)(line << 2);
-		generateTables(line, points, (byte)(depth + 1));
 		generateTables((short)(line | 1), points, (byte)(depth + 1));
 		generateTables((short)(line | 2), (byte)(points + 1), (byte)(depth + 1));
 		generateTables((short)(line | 3), (byte)(points - 1), (byte)(depth + 1));
@@ -102,6 +102,7 @@ public class OthelloState implements State {
 	 * @param index The index on the line we want.
 	 * @return The value at the index on this line.
 	 */
+	// 右移直到，取最后两位
 	private static byte getSpotOnLine(short line, byte index) {
 		if (index >= dimension) return 1;
 		return (byte)((line >> (index * 2)) & 3);
@@ -250,8 +251,12 @@ public class OthelloState implements State {
 					// The flips shall occur!
 					if (DEBUG) System.out.println("Flips will occur on right!");
 					j--;
-					if (first) for (; j > i; j--) p2Right = setSpotOnLine(p2Right, j, (byte)3); 
-					else for (; j > i; j--) p1Right = setSpotOnLine(p1Right, j, (byte)2);
+					if (first)
+						for (; j > i; j--)
+							p2Right = setSpotOnLine(p2Right, j, (byte)3);
+					else
+						for (; j > i; j--)
+							p1Right = setSpotOnLine(p1Right, j, (byte)2);
 					break;
 				}
 			}
@@ -320,7 +325,7 @@ public class OthelloState implements State {
 		byte last = 1;
 		byte current = spot;
 		byte seen = 0;
-		while (spot != 1) { // spot == 1 when index <= dimension
+		while (spot != 1) { // spot == 1 when index >= dimension
 			// No transition?
 			if (spot == current) seen++;
 			// Transition?

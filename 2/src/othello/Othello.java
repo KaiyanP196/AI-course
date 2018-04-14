@@ -7,6 +7,7 @@ import gamePlayer.InvalidActionException;
 import gamePlayer.State.Status;
 import gamePlayer.algorithms.MTDDecider;
 
+import gamePlayer.algorithms.MiniMaxABPruneDecider;
 import gamePlayer.algorithms.MiniMaxDecider;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -39,7 +40,7 @@ class GamePanel extends JPanel implements MouseListener {
 	private boolean turn;
 	private boolean inputEnabled;
 	private final boolean humanPlayerOne;
-        public Othello othello;
+	public Othello othello;
 
 	public GamePanel(Decider computerPlayer, OthelloState board, boolean computerStart) {
 		this.board = board;
@@ -115,9 +116,9 @@ class GamePanel extends JPanel implements MouseListener {
 			if (a.validOn(board)) {
 				try {
 					board = a.applyTo(board);
-                                        board.getSpotAsChar(i, i);
+                    board.getSpotAsChar(i, i);
 					inputEnabled = false;
-                                        updateScores();                                    
+                    updateScores();
 				} catch (InvalidActionException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -225,11 +226,11 @@ class GamePanel extends JPanel implements MouseListener {
 
 	}
 
-        private void updateScores() {
-            int[] scores=board.getScores();
-            othello.score_white.setText(scores[0]+"");
-            othello.score_black.setText(scores[1]+"");
-        }
+	private void updateScores() {
+		int[] scores=board.getScores();
+		othello.score_white.setText(scores[0]+"");
+		othello.score_black.setText(scores[1]+"");
+	}
 
 }
 
@@ -296,6 +297,7 @@ public class Othello extends JFrame {
 
 		gamePanel = new GamePanel(new MiniMaxDecider(computerIsMaximizer, maxDepth), start, computerMovesFirst);
 		//gamePanel = new GamePanel(new MTDDecider(computerIsMaximizer, nummilli, 64), start, computerMovesFirst);
+		//gamePanel = new GamePanel(new MiniMaxABPruneDecider(computerIsMaximizer, maxDepth), start, computerMovesFirst);
 		
 		gamePanel.setMinimumSize(new Dimension( Width,
 				 Height));
@@ -328,7 +330,7 @@ public class Othello extends JFrame {
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				// 0 - Human plays first, 1000ms - time for computer decision (for MTDDecider)
-				Othello frame = new Othello(0, 1000, 2);
+				Othello frame = new Othello(1, 1000, 2);
 			}
 		});
 
